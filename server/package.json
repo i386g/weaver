@@ -1,0 +1,30 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "dependencies": {
+    "case": "^1.6.3",
+    "croner": "^8.0.1",
+    "cronstrue": "^2.48.0",
+    "grammy": "^1.21.1",
+    "kysely": "^0.27.3",
+    "kysely-postgres-js": "^2.0.0",
+    "lodash": "^4.17.21",
+    "luxon": "^3.3.0",
+    "postgres": "^3.4.3",
+    "prexit": "^2.2.0"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.17.0",
+    "@types/luxon": "^3.4.2",
+    "@types/node": "^20.11.28",
+    "@typescript-eslint/eslint-plugin": "^7.1.0",
+    "@typescript-eslint/parser": "^7.1.0",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "prettier": "^3.2.5"
+  },
+  "scripts": {
+    "dev": "npx --yes tsx watch ./src/index.mts",
+    "build": "npx --yes tsc"
+  }
+}

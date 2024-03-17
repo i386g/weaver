@@ -1,0 +1,35 @@
+version: "3.8"
+services:
+  server:
+    build:
+      context: ./ # path of root directory; don't change.
+      dockerfile: ./server/Dockerfile # path relative to root directory.
+    restart: "no"
+    ports:
+      - 127.0.0.1:8080:8080
+    networks:
+      - weaver-network
+
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    ports:
+      - 127.0.0.1:5432:5432
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - ./postgres/entrypoint:/docker-entrypoint-initdb.d
+      - ./postgres/data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready --username=postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+    networks:
+      - weaver-network
+
+networks:
+  weaver-network:
+    name: weaver-network
