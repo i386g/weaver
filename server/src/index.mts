@@ -278,7 +278,6 @@ bot.on("message", async (ctx) => {
             await bot.api.sendMessage(chat_id, `No reminders.`);
             return;
           }
-          await bot.api.sendMessage(chat_id, `Reminders:`);
           for (const reminder of reminders) {
             const { id, name, pattern } = reminder;
             const job = jobs.get(id);
@@ -288,7 +287,7 @@ bot.on("message", async (ctx) => {
             const next_relative = luxon.DateTime.fromJSDate(next).toRelative();
             await bot.api.sendMessage(
               chat_id,
-              `${name}: ${pattern_readable} (next ${next_relative})`,
+              `${name}: ${pattern_readable} (${next_relative})`,
             );
           }
           break;
@@ -305,7 +304,6 @@ bot.on("message", async (ctx) => {
             await bot.api.sendMessage(chat_id, `No reminders.`);
             return;
           }
-          await bot.api.sendMessage(chat_id, `Reminders:`);
           for (const reminder of reminders) {
             const { id, name, pattern } = reminder;
             const job = jobs.get(id);
