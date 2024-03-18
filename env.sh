@@ -7,8 +7,13 @@ echo "--> Removing .env file symlinks."
 rm -f ./server/.env
 
 echo "--> Creating .env file."
-TELEGRAM_BOT_TOKEN=$(openssl rand -hex 32)
-echo "TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN" >> .env
+echo "POSTGRES_HOST=postgres" >> .env
+echo "POSTGRES_PORT=5432" >> .env
+echo "POSTGRES_DB=postgres" >> .env
+echo "POSTGRES_USER=postgres" >> .env
+echo "POSTGRES_PASSWORD=postgres" >> .env
+echo "TELEGRAM_BOT_TOKEN=" >> .env
+
 
 echo "--> Creating .env file symlinks."
 ln ./.env ./server/.env
