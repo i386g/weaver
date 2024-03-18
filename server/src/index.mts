@@ -1,3 +1,5 @@
+/* eslint-disable max-len */
+
 import assert from "node:assert";
 
 import Grammy from "grammy";
@@ -20,17 +22,17 @@ const bot = new Grammy.Bot(TELEGRAM_BOT_TOKEN);
 const rx_command = /^\/([a-z]+)/;
 
 /**
- * @description /create * * * * * * example-name
+ * @description /create * * * * * * example
  */
 const rx_create_cron = /^\/(create|c) (.+) ([a-z0-9-]+)$/;
 
 /**
- * @description /create 0600 example-name
+ * @description /create 0600 example
  */
 const rx_create_hhmm = /^\/(create|c) (\d{4}) ([a-z0-9-]+)$/;
 
 /**
- * @description /delete example-name
+ * @description /delete example
  */
 const rx_delete = /^\/(delete|d) ([a-z0-9-]+)$/;
 
@@ -40,13 +42,13 @@ const rx_delete = /^\/(delete|d) ([a-z0-9-]+)$/;
 const rx_timezone = /^\/(timezone|tz) (.+)$/;
 
 /**
- * @description /parse * * * * * *
+ * @description /explain * * * * * *
  */
-const rx_parse_cron = /^\/(parse|p) (.+)$/;
+const rx_explain_cron = /^\/(explain|e) (.+)$/;
 
 const jobs: Map<string, Cron> = new Map();
 
-const parse_command = (text: string) => {
+const extract_command = (text: string) => {
   if (rx_command.test(text) === true) {
     const match = text.match(rx_command);
     assert(match instanceof Array);
@@ -83,52 +85,78 @@ bot.on("message", async (ctx) => {
     if (typeof ctx.message.text === "string") {
       const chat_id = ctx.chat.id;
 
-      const command = parse_command(ctx.message.text);
+      const command = extract_command(ctx.message.text);
 
       switch (command) {
         case "start":
+        case "s":
         case "help":
         case "h": {
           const instructions = [
-            "Weaver Bot - @myweaverbot",
+            "<strong>Weaver Bot</strong> - @myweaverbot",
             "",
-            "/create [hhmm] [kebab-case-name]",
-            "/create 0600 example-name",
-            "/c 0600 example-name",
+            "<strong>Create</strong>",
+            "• creates a reminder.",
+            "• accepts military time.",
+            "/create [hhmm] [name]",
+            "/create 0600 example",
+            "• accepts cron schedule.",
+            "/create [schedule] [name]",
+            "/create * * * * * * example",
             "",
-            "/create [cron-pattern] [kebab-case-name]",
-            "/create */5 * * * * * example-name",
-            "/c */5 * * * * * example-name",
+            "<strong>Cron Schedules</strong>",
+            "• are codes for scheduling at recurring intervals.",
             "",
-            "/parse [cron-pattern]",
-            "/p */5 * * * * *",
+            "<strong>Cron Schedule Examples</strong>",
+            "• <strong>00 06 * * 1</strong> - At 06:00 AM, only on Monday",
+            "• <strong>00 18 * * *</strong> - At 06:00 AM",
             "",
-            "/delete [kebab-case-name]",
-            "/delete example-name",
-            "/d example-name",
+            "<strong>Cron Schedule References</strong>",
+            "• https://croner.56k.guru/usage/pattern/",
+            "• https://crontab.guru/",
             "",
+            "<strong>Explain</strong>",
+            "• explains cron schedule.",
+            "/explain [schedule]",
+            "/explain 00 06 * * 1",
+            "",
+            "<strong>Delete</strong>",
+            "• deletes a reminder.",
+            "/delete [name]",
+            "/delete example",
+            "",
+            "<strong>List</strong>",
+            "• lists all reminders.",
             "/list",
             "/l",
             "",
-            "/verbose",
-            "/v",
+            "<strong>List Verbose</strong>",
+            "• lists a reminders, verbose.",
+            "/list-verbose",
+            "/lv",
             "",
-            "/timezone [timezone]",
+            "<strong>Timezone</strong>",
+            "• gets or sets the timezone.",
+            "/timezone [zone]",
             "/timezone Asia/Manila",
-            "/tz Asia/Manila",
             "",
+            "<strong>Timezones</strong>",
+            "• gets all timezones.",
             "/timezones",
-            "/tzs",
             "",
+            "<strong>Start / Help</strong>",
+            "• shows usage info.",
             "/start",
+            "/s",
             "/help",
             "/h",
             "",
-            "cron-pattern: https://croner.56k.guru/usage/pattern/",
           ];
           await bot.api.sendMessage(chat_id, instructions.join("\n"), {
             link_preview_options: { is_disabled: true },
+            parse_mode: "HTML",
           });
+
           break;
         }
 
@@ -143,7 +171,7 @@ bot.on("message", async (ctx) => {
             assert(typeof name === "string");
             const hh = hhmm.substring(0, 2);
             const mm = hhmm.substring(2, 4);
-            const pattern = `${mm} ${hh} * * *`;
+            const schedule = `${mm} ${hh} * * *`;
             const timezone = await get_timezone(chat_id);
             const existing_reminder = await db
               .selectFrom("reminders")
@@ -155,7 +183,7 @@ bot.on("message", async (ctx) => {
             const reminder: InsertableReminder = {
               chat_id,
               name,
-              pattern,
+              schedule,
             };
             const created_reminder = await db
               .insertInto("reminders")
@@ -169,7 +197,7 @@ bot.on("message", async (ctx) => {
             const callback = async () => {
               await bot.api.sendMessage(chat_id, `Reminder: ${name}`);
             };
-            const job = new Cron(pattern, options, callback);
+            const job = new Cron(schedule, options, callback);
             jobs.set(created_reminder.id, job);
             await bot.api.sendMessage(chat_id, "Created.");
             return;
@@ -178,9 +206,9 @@ bot.on("message", async (ctx) => {
           if (rx_create_cron.test(ctx.message.text) === true) {
             const match = ctx.message.text.match(rx_create_cron);
             assert(match instanceof Array);
-            const pattern = match[2];
+            const schedule = match[2];
             const name = match[3];
-            assert(typeof pattern === "string");
+            assert(typeof schedule === "string");
             assert(typeof name === "string");
             const timezone = await get_timezone(chat_id);
             const existing_reminder = await db
@@ -193,7 +221,7 @@ bot.on("message", async (ctx) => {
             const reminder: InsertableReminder = {
               chat_id,
               name,
-              pattern,
+              schedule,
             };
             const created_reminder = await db
               .insertInto("reminders")
@@ -207,7 +235,7 @@ bot.on("message", async (ctx) => {
             const callback = async () => {
               await bot.api.sendMessage(chat_id, `Reminder: ${name}`);
             };
-            const job = new Cron(pattern, options, callback);
+            const job = new Cron(schedule, options, callback);
             jobs.set(created_reminder.id, job);
             await bot.api.sendMessage(chat_id, "Created.");
             return;
@@ -218,14 +246,14 @@ bot.on("message", async (ctx) => {
           break;
         }
 
-        case "parse":
-        case "p": {
-          if (rx_parse_cron.test(ctx.message.text) === true) {
-            const match = ctx.message.text.match(rx_parse_cron);
+        case "explain":
+        case "e": {
+          if (rx_explain_cron.test(ctx.message.text) === true) {
+            const match = ctx.message.text.match(rx_explain_cron);
             assert(match instanceof Array);
-            const pattern = match[2];
-            assert(typeof pattern === "string");
-            await bot.api.sendMessage(chat_id, cronstrue.toString(pattern));
+            const schedule = match[2];
+            assert(typeof schedule === "string");
+            await bot.api.sendMessage(chat_id, cronstrue.toString(schedule));
             return;
           }
           await bot.api.sendMessage(chat_id, "Error: incorrect format.");
@@ -279,22 +307,22 @@ bot.on("message", async (ctx) => {
             return;
           }
           for (const reminder of reminders) {
-            const { id, name, pattern } = reminder;
+            const { id, name, schedule } = reminder;
             const job = jobs.get(id);
             assert(job instanceof Object);
-            const pattern_readable = cronstrue.toString(pattern);
+            const schedule_readable = cronstrue.toString(schedule);
             const next = job.nextRun() as Date;
             const next_relative = luxon.DateTime.fromJSDate(next).toRelative();
             await bot.api.sendMessage(
               chat_id,
-              `${name}: ${pattern_readable} (${next_relative})`,
+              `${name}: ${schedule_readable} (${next_relative})`,
             );
           }
           break;
         }
 
-        case "verbose":
-        case "v": {
+        case "list-verbose":
+        case "lv": {
           const reminders = await db
             .selectFrom("reminders")
             .selectAll()
@@ -305,18 +333,18 @@ bot.on("message", async (ctx) => {
             return;
           }
           for (const reminder of reminders) {
-            const { id, name, pattern } = reminder;
+            const { id, name, schedule } = reminder;
             const job = jobs.get(id);
             assert(job instanceof Object);
-            const pattern_readable = cronstrue.toString(pattern);
+            const schedule_readable = cronstrue.toString(schedule);
             const next = job.nextRun() as Date;
             const next_iso = luxon.DateTime.fromJSDate(next).toISO();
             const next_relative = luxon.DateTime.fromJSDate(next).toRelative();
             const info = {
               id,
               name,
-              pattern,
-              pattern_readable,
+              schedule,
+              schedule_readable,
               next_iso,
               next_relative,
             };
@@ -359,7 +387,7 @@ bot.on("message", async (ctx) => {
               .where("chat_id", "=", chat_id)
               .execute();
             for (const reminder of reminders) {
-              const { id, name, pattern } = reminder;
+              const { id, name, schedule } = reminder;
               /**
                * Delete cron job.
                */
@@ -380,9 +408,9 @@ bot.on("message", async (ctx) => {
                 const callback = async () => {
                   await bot.api.sendMessage(chat_id, `Reminder: ${name}`);
                 };
-                const job = new Cron(pattern, options, callback);
+                const job = new Cron(schedule, options, callback);
                 jobs.set(reminder.id, job);
-                const pattern_readable = cronstrue.toString(pattern);
+                const schedule_readable = cronstrue.toString(schedule);
                 const next = job.nextRun() as Date;
                 const next_iso = luxon.DateTime.fromJSDate(next).toISO();
                 const next_relative =
@@ -390,8 +418,8 @@ bot.on("message", async (ctx) => {
                 const info = {
                   id,
                   name,
-                  pattern,
-                  pattern_readable,
+                  schedule,
+                  schedule_readable,
                   next_iso,
                   next_relative,
                 };
@@ -433,7 +461,7 @@ bot.start().catch(console.error);
 {
   const reminders = await db.selectFrom("reminders").selectAll().execute();
   for (const reminder of reminders) {
-    const { chat_id, name, pattern } = reminder;
+    const { chat_id, name, schedule } = reminder;
     const timezone = await get_timezone(chat_id);
     const options: CronOptions = {
       name: reminder.id,
@@ -442,7 +470,9 @@ bot.start().catch(console.error);
     const callback = async () => {
       await bot.api.sendMessage(chat_id, `Reminder: ${name}`);
     };
-    const job = new Cron(pattern, options, callback);
+    const job = new Cron(schedule, options, callback);
     jobs.set(reminder.id, job);
   }
 }
+
+console.log("Weaver started.");
