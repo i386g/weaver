@@ -278,13 +278,18 @@ bot.on("message", async (ctx) => {
             await bot.api.sendMessage(chat_id, `No reminders.`);
             return;
           }
+          await bot.api.sendMessage(chat_id, `Reminders:`);
           for (const reminder of reminders) {
-            const { id, name } = reminder;
+            const { id, name, pattern } = reminder;
             const job = jobs.get(id);
             assert(job instanceof Object);
+            const pattern_readable = cronstrue.toString(pattern);
             const next = job.nextRun() as Date;
             const next_relative = luxon.DateTime.fromJSDate(next).toRelative();
-            await bot.api.sendMessage(chat_id, `${name}: ${next_relative}`);
+            await bot.api.sendMessage(
+              chat_id,
+              `${name}: ${pattern_readable} (next ${next_relative})`,
+            );
           }
           break;
         }
@@ -300,6 +305,7 @@ bot.on("message", async (ctx) => {
             await bot.api.sendMessage(chat_id, `No reminders.`);
             return;
           }
+          await bot.api.sendMessage(chat_id, `Reminders:`);
           for (const reminder of reminders) {
             const { id, name, pattern } = reminder;
             const job = jobs.get(id);
