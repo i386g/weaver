@@ -110,7 +110,7 @@ bot.on("message", async (ctx) => {
             "",
             "<strong>Cron Schedule Examples</strong>",
             "• <strong>00 06 * * 1</strong> - At 06:00 AM, only on Monday",
-            "• <strong>00 18 * * *</strong> - At 06:00 AM",
+            "• <strong>00 18 * * *</strong> - At 06:00 PM",
             "",
             "<strong>Cron Schedule References</strong>",
             "• https://croner.56k.guru/usage/pattern/",
