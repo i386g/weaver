@@ -94,6 +94,7 @@ bot.on("message", async (ctx) => {
         case "h": {
           const instructions = [
             "<strong>Weaver Bot</strong> - @myweaverbot",
+            "• a bot for scheduling at recurring intervals.",
             "",
             "<strong>Create</strong>",
             "• creates a reminder.",
@@ -128,12 +129,10 @@ bot.on("message", async (ctx) => {
             "<strong>List</strong>",
             "• lists all reminders.",
             "/list",
-            "/l",
             "",
-            "<strong>List Verbose</strong>",
-            "• lists a reminders, verbose.",
-            "/list-verbose",
-            "/lv",
+            "<strong>Verbose List</strong>",
+            "• verbosely lists all reminders.",
+            "/verbose",
             "",
             "<strong>Timezone</strong>",
             "• gets or sets the timezone.",
@@ -147,9 +146,18 @@ bot.on("message", async (ctx) => {
             "<strong>Start / Help</strong>",
             "• shows usage info.",
             "/start",
-            "/s",
             "/help",
-            "/h",
+            "",
+            "<strong>Shortcuts</strong>",
+            "• /c for /create",
+            "• /e for /explain",
+            "• /d for /delete",
+            "• /l for /list",
+            "• /v for /verbose",
+            "• /tz for /timezone",
+            "• /tzs for /timezones",
+            "• /s for /start",
+            "• /h for /help",
             "",
           ];
           await bot.api.sendMessage(chat_id, instructions.join("\n"), {
@@ -199,7 +207,7 @@ bot.on("message", async (ctx) => {
             };
             const job = new Cron(schedule, options, callback);
             jobs.set(created_reminder.id, job);
-            await bot.api.sendMessage(chat_id, "Created.");
+            await bot.api.sendMessage(chat_id, "Reminder created.");
             return;
           }
 
@@ -237,7 +245,7 @@ bot.on("message", async (ctx) => {
             };
             const job = new Cron(schedule, options, callback);
             jobs.set(created_reminder.id, job);
-            await bot.api.sendMessage(chat_id, "Created.");
+            await bot.api.sendMessage(chat_id, "Reminder created.");
             return;
           }
 
@@ -286,7 +294,7 @@ bot.on("message", async (ctx) => {
             assert(job instanceof Object);
             job.stop();
             jobs.delete(deleted_reminder.id);
-            await bot.api.sendMessage(chat_id, "Deleted.");
+            await bot.api.sendMessage(chat_id, "Reminder deleted.");
             return;
           }
 
@@ -303,7 +311,7 @@ bot.on("message", async (ctx) => {
             .where("chat_id", "=", chat_id)
             .execute();
           if (reminders.length === 0) {
-            await bot.api.sendMessage(chat_id, `No reminders.`);
+            await bot.api.sendMessage(chat_id, `Reminders are empty.`);
             return;
           }
           for (const reminder of reminders) {
@@ -321,15 +329,15 @@ bot.on("message", async (ctx) => {
           break;
         }
 
-        case "list-verbose":
-        case "lv": {
+        case "verbose":
+        case "v": {
           const reminders = await db
             .selectFrom("reminders")
             .selectAll()
             .where("chat_id", "=", chat_id)
             .execute();
           if (reminders.length === 0) {
-            await bot.api.sendMessage(chat_id, `No reminders.`);
+            await bot.api.sendMessage(chat_id, `Reminders are empty.`);
             return;
           }
           for (const reminder of reminders) {
