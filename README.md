@@ -3,7 +3,7 @@
 #### Development
 
 ```sh
-cd ./weaver/
+cd ./server/
 npm install
 npm run dev
 ```
