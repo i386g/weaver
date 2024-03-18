@@ -1,15 +1,5 @@
 version: "3.8"
 services:
-  server:
-    build:
-      context: ./ # path of root directory; don't change.
-      dockerfile: ./server/Dockerfile # path relative to root directory.
-    restart: "no"
-    ports:
-      - 127.0.0.1:8080:8080
-    networks:
-      - weaver-network
-
   postgres:
     image: postgres:16
     restart: unless-stopped
@@ -29,6 +19,18 @@ services:
       retries: 3
     networks:
       - weaver-network
+
+  server:
+    build:
+      context: ./ # path of root directory; don't change.
+      dockerfile: ./server/Dockerfile # path relative to root directory.
+    restart: "no"
+    ports:
+      - 127.0.0.1:8080:8080
+    networks:
+      - weaver-network
+    depends_on:
+      - postgres
 
 networks:
   weaver-network:
