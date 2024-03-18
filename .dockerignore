@@ -1,12 +1,7 @@
 # server
 
 /server/node_modules/
-/server/.env
 
 # postgres
 
 /postgres/data/
-
-# root
-
-/.env
