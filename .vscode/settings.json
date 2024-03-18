@@ -30,6 +30,6 @@
     "**/tmp",
     "**/dist",
     "**/tests",
-    "**/postgres/data/"
+    "**/postgres/data"
   ]
 }
