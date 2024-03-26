@@ -180,6 +180,8 @@ bot.on("message", async (ctx) => {
             const hh = hhmm.substring(0, 2);
             const mm = hhmm.substring(2, 4);
             const schedule = `${mm} ${hh} * * *`;
+            const sequence = Number(`${mm}${hh}`);
+            assert(Number.isInteger(sequence) === true);
             const timezone = await get_timezone(chat_id);
             const existing_reminder = await db
               .selectFrom("reminders")
@@ -192,6 +194,7 @@ bot.on("message", async (ctx) => {
               chat_id,
               name,
               schedule,
+              sequence,
             };
             const created_reminder = await db
               .insertInto("reminders")
@@ -218,6 +221,7 @@ bot.on("message", async (ctx) => {
             const name = match[3];
             assert(typeof schedule === "string");
             assert(typeof name === "string");
+            const sequence = 0;
             const timezone = await get_timezone(chat_id);
             const existing_reminder = await db
               .selectFrom("reminders")
@@ -230,6 +234,7 @@ bot.on("message", async (ctx) => {
               chat_id,
               name,
               schedule,
+              sequence,
             };
             const created_reminder = await db
               .insertInto("reminders")
@@ -309,6 +314,7 @@ bot.on("message", async (ctx) => {
             .selectFrom("reminders")
             .selectAll()
             .where("chat_id", "=", chat_id)
+            .orderBy("sequence", "asc")
             .execute();
           if (reminders.length === 0) {
             await bot.api.sendMessage(chat_id, `Reminders are empty.`);
@@ -335,6 +341,7 @@ bot.on("message", async (ctx) => {
             .selectFrom("reminders")
             .selectAll()
             .where("chat_id", "=", chat_id)
+            .orderBy("sequence", "asc")
             .execute();
           if (reminders.length === 0) {
             await bot.api.sendMessage(chat_id, `Reminders are empty.`);
@@ -393,6 +400,7 @@ bot.on("message", async (ctx) => {
               .selectFrom("reminders")
               .selectAll()
               .where("chat_id", "=", chat_id)
+              .orderBy("sequence", "asc")
               .execute();
             for (const reminder of reminders) {
               const { id, name, schedule } = reminder;
@@ -447,7 +455,9 @@ bot.on("message", async (ctx) => {
         }
 
         default: {
-          // await bot.api.sendMessage(chat_id, "Unknown command.");
+          if (ctx.chat.type === "private") {
+            await bot.api.sendMessage(chat_id, "Unknown command.");
+          }
           break;
         }
       }
@@ -467,7 +477,11 @@ bot.on("message", async (ctx) => {
 bot.start().catch(console.error);
 
 {
-  const reminders = await db.selectFrom("reminders").selectAll().execute();
+  const reminders = await db
+    .selectFrom("reminders")
+    .selectAll()
+    .orderBy("sequence", "asc")
+    .execute();
   for (const reminder of reminders) {
     const { chat_id, name, schedule } = reminder;
     const timezone = await get_timezone(chat_id);

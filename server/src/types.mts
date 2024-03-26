@@ -10,6 +10,7 @@ export interface Reminder {
   chat_id: number;
   name: string;
   schedule: string;
+  sequence: number;
 }
 export interface KyselyReminder extends Omit<Reminder, "id"> {
   id: GeneratedAlways<string>;
