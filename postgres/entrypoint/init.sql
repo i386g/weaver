@@ -11,7 +11,7 @@ CREATE TABLE weaver.reminders (
     "chat_id" double precision NOT NULL,
     "name" text NOT NULL,
     "schedule" text NOT NULL,
-    "sequence" number NOT NULL,
+    "sequence" smallint NOT NULL,
     UNIQUE("chat_id", "name")
 );
 
