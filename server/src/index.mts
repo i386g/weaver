@@ -447,7 +447,7 @@ bot.on("message", async (ctx) => {
         }
 
         default: {
-          await bot.api.sendMessage(chat_id, "Unknown command.");
+          // await bot.api.sendMessage(chat_id, "Unknown command.");
           break;
         }
       }
