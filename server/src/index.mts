@@ -180,7 +180,7 @@ bot.on("message", async (ctx) => {
             const hh = hhmm.substring(0, 2);
             const mm = hhmm.substring(2, 4);
             const schedule = `${mm} ${hh} * * *`;
-            const sequence = Number(`${mm}${hh}`);
+            const sequence = Number(`${hh}${mm}`);
             assert(Number.isInteger(sequence) === true);
             const timezone = await get_timezone(chat_id);
             const existing_reminder = await db
