@@ -348,7 +348,7 @@ bot.on("message", async (ctx) => {
             return;
           }
           for (const reminder of reminders) {
-            const { id, name, schedule } = reminder;
+            const { id, name, schedule, sequence } = reminder;
             const job = jobs.get(id);
             assert(job instanceof Object);
             const schedule_readable = cronstrue.toString(schedule);
@@ -362,6 +362,7 @@ bot.on("message", async (ctx) => {
               schedule_readable,
               next_iso,
               next_relative,
+              sequence,
             };
             await bot.api.sendMessage(chat_id, JSON.stringify(info, null, 2));
           }
